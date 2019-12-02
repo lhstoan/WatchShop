@@ -161,6 +161,28 @@
 header {
     background: #121212;
 
+    .contact {
+        background: #0e0e0e;
+
+        .link-contact {
+            height: 50px;
+            .ct-icon {
+                
+                width: 20px;
+                height: 20px;
+
+                svg {
+                    width: 100%;
+                    height: 100%;
+
+                    path {
+                        fill: #bcbcbc;
+                    }
+                }
+            }
+        }
+    }
+
     .container {
         display: block;
         position: relative;
@@ -238,17 +260,19 @@ header {
                     fill: #fff;
                 }
             }
-            span{
+
+            span {
                 position: absolute;
                 text-align: center;
+                width: 15px;
+                height: 15px;
                 font-size: 10px;
                 color: white;
                 background: #ab8e69;
-                padding: 0px 3px;
                 border: 1px solid #ab8e69;
                 border-radius: 50%;
                 top: -5px;
-                left: -5px;
+                right: -5px;
             }
 
         }

@@ -1,0 +1,95 @@
+_satellite.pushAsyncScript(function(event, target, $variables){
+  try{
+  var s = _satellite.getToolsByType('sc')[0].getS();
+  console.log(typeof s);
+
+  if (typeof s === 'undefined'){
+    console.log(typeof s);
+    var entorno = _satellite.readStoredSetting('stagingLibrary');
+    if(entorno === "true"){
+      var s=s_gi('fcbglobalpre');
+
+    }else{
+      var s=s_gi('fcbglobalprod');
+
+    }
+  }
+} catch(err){
+      console.log("HIKE: \"s\" no definido:" + err);
+}
+
+var eventName = "";
+var eventVideo = _satellite.getVar("videoEvent");
+var eventTime = _satellite.getVar("videoTime");
+
+
+console.log("\n\n\n******* HIKE ********\n\n\n");
+console.log("start function doTrackingEventVideo. videoEvent: " + _satellite.getVar("videoEvent")+ ", videoTime: " +_satellite.getVar("videoTime"));
+
+if (eventVideo === "first play"){
+      eventName = "event3";
+}else if(eventVideo === "pause"){
+      eventName = "event4";
+}else if(eventVideo === "complete"){
+      eventName = "event6,event4";
+}else if(eventVideo === "segment1"){
+      eventName = "event5,event7,event4";
+}else if(eventVideo === "segment2"){
+      eventName = "event5,event8,event4";
+}else if(eventVideo === "segment3"){
+      eventName = "event5,event9,event4";
+}else if(eventVideo === "streaming"){
+      eventName = "event4";
+}
+
+try {
+      s = _satellite.getToolsByType('sc')[0].getS();
+
+      s.linkTrackVars="server,prop10,prop11,prop12,prop13,prop14,prop23,eVar45,eVar49,eVar50,eVar51,eVar52,eVar53,eVar54,eVar55,eVar56,eVar57,eVar58,eVar58,eVar59,eVar60,eVar61,eVar63,events";
+      s.linkTrackEvents=eventName;
+      s.eVar50=_satellite.getVar("videoName");
+      s.eVar51=_satellite.getVar("videoId");
+      s.eVar53=_satellite.getVar("videoDuracio");
+      s.eVar54=_satellite.getVar("videoStreaming");
+      s.eVar56=_satellite.getVar("videoSuscripcio");
+      s.eVar57=_satellite.getVar("videoDataEvent");
+      s.eVar58=_satellite.getVar("videoDataPublicacio");
+      s.eVar59=_satellite.getVar("videoDiesDesdePublicacio");
+      s.eVar60=_satellite.getVar("videoRelacionat");
+      s.eVar61=_satellite.getVar("videoCompeticio");
+      s.eVar63=_satellite.getVar("videoCategoria");
+      s.eVar45=window.document.URL;
+  		s.prop10="D=v50";
+  		s.prop11="D=v51";
+  		s.prop12="D=v61";
+  		s.prop13="D=v63";
+  		s.prop14="D=v57";
+  		s.prop23="D=v53";
+      s.server=window.location.host;
+
+      if(eventVideo === "segment1"){
+         s.eVar49="Segment 25%";
+      }else if(eventVideo === "segment2"){
+         s.eVar49="Segment 50%";
+      }else if(eventVideo === "segment3"){
+         s.eVar49="Segment 75%";
+      }else if(eventVideo === "complete"){
+      	s.eVar49="Segment 100%";
+      }else{
+        s.eVar49="no informat";
+      }
+
+      if (eventVideo !== "first play"){
+        s.events=eventName+"="+eventTime;
+      }else if(eventVideo === "first play"){
+        s.events=eventName;
+      }
+      
+      
+      s.tl(true,'o','VideoEvent');
+  		s.clearVars();
+
+    } catch (err) {
+      console.log("HIKE : eventTrackingVideo error  \n" + err);
+    }
+});

@@ -1,0 +1,6 @@
+_satellite.pushAsyncScript(function(event, target, $variables){
+  var rnd = Math.random();
+var ur  = escape(document.location.href);
+var js  = document.createElement('script'); js.src = "https://es.wtp101.com/pixel?id=76afe7a556bc6a95&rnd=" + rnd + "&ur=" + ur + "&SECCION=" + _satellite.getVar("Seccio net") + "&SUBSECCION=" + _satellite.getVar("Subseccio net") + "&VAR=" + _satellite.getVar("idUsuari net");
+document.getElementsByTagName('body')[0].appendChild(js);
+});

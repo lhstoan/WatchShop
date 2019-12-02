@@ -1,0 +1,395 @@
+// Direct Call Rules: Eventos globales
+
+/*
+<script>
+    
+    function eventosDTM(eventCategory, eventAction, eventLabel) {
+      _satellite.setVar({catFCB:eventCategory, actFCB:eventAction, labelFCB:eventLabel});
+      _satellite.track('scEvent');
+    }
+  
+    // Ejemplos de llamada al metodo
+    // eventosDTM('boto-sidebar-es', 'contacte-mail', 'faqs-general');
+    // eventosDTM('boto-sidebar-es', 'contacte-mail', 'faqs-general');
+    // eventosDTM("boto-fitxa-entrades-grups-museu", "ejemplo Action 1", "ejemplo Label 1")
+</script>
+
+
+Ejemplo: eventosDTM("boto-fitxa-entrades-grups-museu", "ejemplo Action 1", "ejemplo Label 1")
+Idiomas:  en,es,ca,fr,pt,ar,ja,id,jp y in
+*/
+
+// To DO
+// a) Crear function que elimina acentos de una string. Aplicar este valor a la variable que almacenara el valor del data element catFCB
+// b) Recuperar el indice del array arrEvent, en base al valor de la variable mencionada en el punto anterior (data element sin acento)
+
+//var eventoFCB = _satellite.getVar('eventoFCB');
+
+
+//*** Instrucciones de Debuging en consola.
+// a) Copiar y Pegar el texto "ar normalize = (function ...." hasta la linea arrEvent.push({"66":"banners"});
+// b) copiar la definición de function eventosDTM() pero comentando la linea _satellite.track('scEvent');
+
+//    function eventosDTM(eventCategory, eventAction, eventLabel) { _satellite.setVar({catFCB:eventCategory, actFCB:eventAction, labelFCB:eventLabel}); }
+
+
+// c) ejecutar eventosDTM('boto-sidebar-es', 'contacte-mail', 'faqs-general');
+// d) ejecutar:  var catFCB = normalize(_satellite.getVar('catFCB')); 
+// e) ejecutar: doTrackingEvent(catFCB);
+
+
+try{
+  var s = _satellite.getToolsByType('sc')[0].getS();
+  console.log(typeof s);
+
+  if (typeof s === 'undefined'){
+    console.log(typeof s);
+    var entorno = _satellite.readStoredSetting('stagingLibrary');
+    if(entorno === "true"){
+      var s=s_gi('fcbglobalpre');
+
+    }else{
+      var s=s_gi('fcbglobalprod');
+
+    }
+  }
+} catch(err){
+      console.log("HIKE: \"s\" no definido:" + err);
+}
+
+
+var normalize = (function() {
+  var from = "ÃÀÁÄÂÈÉËÊÌÍÏÎÒÓÖÔÙÚÜÛãàáäâèéëêìíïîòóöôùúüûÑñÇç";
+  var to   = "AAAAAEEEEIIIIOOOOUUUUaaaaaeeeeiiiioooouuuunncc";
+  var mapping = {};
+  for(var i = 0, j = from.length; i < j; i++ )
+      mapping[ from.charAt( i ) ] = to.charAt( i );
+
+  return function( str ) {
+      var ret = [];
+      for( var i = 0, j = str.length; i < j; i++ ) {
+          var c = str.charAt( i );
+          if( mapping.hasOwnProperty( str.charAt( i ) ) )
+              ret.push( mapping[ c ] );
+          else
+              ret.push( c );
+      }      
+      return ret.join( '' );
+  }
+})();
+
+
+
+function doTrackingEvent(catFCB = "") {
+  console.log("\n\n\n******* DBI ********\n\n\n");
+  console.log("start function doTrackingEvent(catFCB). catFCB: " +catFCB);
+
+  var seguir = true;
+  var valor = "";
+  var i = 0;
+  var eventName = "";
+
+  while (seguir && i < arrEvent.length) {
+    try {
+      var keyAndCategory = arrEvent[i]
+      var key = Object.keys(keyAndCategory)[0]; //There is only one key and one category here
+
+      valor = keyAndCategory[key];
+      valor = normalize(valor);
+
+      if(valor ===  catFCB) {
+        eventName = "event"+key;
+        seguir = false;
+      } else {
+        key = "";
+      }
+    } catch(err) {
+      valor = err;
+    }
+    i++;
+  }
+
+  if (eventName !== "") {
+    eventTracking("event"+key);
+  } else if (eventName === "" && catFCB.length > 0) {
+    eventTracking("event99");
+  } else {
+    console.log("DBi: Function doTrackingEvent() Log. La categoria no tiene valor")
+  }
+
+} 
+
+function eventTracking(eventName) {
+    console.log("\nstart function eventTracking(eventName). eventName: " +eventName);
+ 
+    var catFCB = null;
+    var actFCB = null;
+    var labelFCB = null;
+    var s = null;
+
+    try {
+      catFCB = _satellite.getVar('catFCB');
+      actFCB = _satellite.getVar('actFCB');
+      labelFCB = _satellite.getVar('labelFCB');
+      s = _satellite.getToolsByType('sc')[0].getS();
+
+      s.linkTrackVars="eVar42,eVar43,eVar44,eVar45,events,server";
+      s.linkTrackEvents=eventName;
+      s.eVar42=catFCB;
+      s.eVar43=actFCB;
+      s.eVar44=labelFCB;
+      s.eVar45=window.document.URL;
+      s.server=window.location.host;
+      s.events=eventName;
+      
+      // Incidencia en DTM cuando se ejecuta el proximo comando.
+      s.tl(true,'o','Event');
+      s.clearVars();
+      if(catFCB=="Draw")
+        dataLayer.push({'event':'fBSorteos', 'eventCategory': catFCB, 'eventAction':actFCB, 'eventLabel':labelFCB});
+
+    } catch (err) {
+      console.log("Exception -> eventTracking(eventName). Error Description: \n" + err);
+    }
+}
+
+
+
+
+var arrEvent=[];
+arrEvent.push({"28":"Socis"});
+arrEvent.push({"28":"socis"});
+arrEvent.push({"29":"Penyes"});
+arrEvent.push({"29":"penyes"});
+arrEvent.push({"30":"Cataleg Multimedia"});
+
+//event32 boto  Para todos los idiomas
+arrEvent.push({"31":"boto-en"});
+arrEvent.push({"31":"boto-es"});
+arrEvent.push({"31":"boto-ca"});
+arrEvent.push({"31":"boto-fr"});
+arrEvent.push({"31":"boto-ar"});
+arrEvent.push({"31":"boto-ja"});
+arrEvent.push({"31":"boto-id"});
+arrEvent.push({"31":"boto-pj"});
+arrEvent.push({"31":"boto-in"});
+
+//event32 boto-sidebar  Para todos los idiomas
+arrEvent.push({"32":"boto-sidebar-en"});
+arrEvent.push({"32":"boto-sidebar-es"});
+arrEvent.push({"32":"boto-sidebar-ca"});
+arrEvent.push({"32":"boto-sidebar-fr"});
+arrEvent.push({"32":"boto-sidebar-ar"});
+arrEvent.push({"32":"boto-sidebar-ja"});
+arrEvent.push({"32":"boto-sidebar-id"});
+arrEvent.push({"32":"boto-sidebar-pj"});
+arrEvent.push({"32":"boto-sidebar-in"});
+
+//event33 boto-cercador Para todos los idiomas
+arrEvent.push({"33":"boto-cercador-en"});
+arrEvent.push({"33":"boto-cercador-es"});
+arrEvent.push({"33":"boto-cercador-ca"});
+arrEvent.push({"33":"boto-cercador-fr"});
+arrEvent.push({"33":"boto-cercador-pt"});
+arrEvent.push({"33":"boto-cercador-ar"});
+arrEvent.push({"33":"boto-cercador-ja"});
+arrEvent.push({"33":"boto-cercador-id"});
+arrEvent.push({"33":"boto-cercador-jp"});
+arrEvent.push({"33":"boto-cercador-in"});
+
+
+//event34 boto-contacte Para todos los idiomas
+arrEvent.push({"34":"boto-contacte-en"});
+arrEvent.push({"34":"boto-contacte-es"});
+arrEvent.push({"34":"boto-contacte-ca"});
+arrEvent.push({"34":"boto-contacte-fr"});
+arrEvent.push({"34":"boto-contacte-pt"});
+arrEvent.push({"34":"boto-contacte-ar"});
+arrEvent.push({"34":"boto-contacte-ja"});
+arrEvent.push({"34":"boto-contacte-id"});
+arrEvent.push({"34":"boto-contacte-jp"});
+arrEvent.push({"34":"boto-contacte-in"});
+
+//event35 boto-calendari  Para todos los idiomas
+arrEvent.push({"35":"boto-calendari-en"});
+arrEvent.push({"35":"boto-calendari-es"});
+arrEvent.push({"35":"boto-calendari-ca"});
+arrEvent.push({"35":"boto-calendari-fr"});
+arrEvent.push({"35":"boto-calendari-pt"});
+arrEvent.push({"35":"boto-calendari-ar"});
+arrEvent.push({"35":"boto-calendari-ja"});
+arrEvent.push({"35":"boto-calendari-id"});
+arrEvent.push({"35":"boto-calendari-jp"});
+arrEvent.push({"35":"boto-calendari-in"});
+
+
+arrEvent.push({"36":"boto-home"});
+
+
+//event37 boto-home-oa-online Para todos los idiomas
+arrEvent.push({"37":"boto-home-oa-online-en"});
+arrEvent.push({"37":"boto-home-oa-online-es"});
+arrEvent.push({"37":"boto-home-oa-online-ca"});
+arrEvent.push({"37":"boto-home-oa-online-fr"});
+arrEvent.push({"37":"boto-home-oa-online-pt"});
+arrEvent.push({"37":"boto-home-oa-online-ar"});
+arrEvent.push({"37":"boto-home-oa-online-ja"});
+arrEvent.push({"37":"boto-home-oa-online-id"});
+arrEvent.push({"37":"boto-home-oa-online-jp"});
+arrEvent.push({"37":"boto-home-oa-online-in"});
+
+//event38 boto-detall-partit  Para todos los idiomas
+arrEvent.push({"38":"boto-detall-partit-en"});
+arrEvent.push({"38":"boto-detall-partit-eng"});
+arrEvent.push({"38":"boto-detall-partit-es"});
+arrEvent.push({"38":"boto-detall-partit-ca"});
+arrEvent.push({"38":"boto-detall-partit-fr"});
+arrEvent.push({"38":"boto-detall-partit-pt"});
+arrEvent.push({"38":"boto-detall-partit-ar"});
+arrEvent.push({"38":"boto-detall-partit-ja"});
+arrEvent.push({"38":"boto-detall-partit-id"});
+arrEvent.push({"38":"boto-detall-partit-jp"});
+arrEvent.push({"38":"boto-detall-partit-in"});
+
+//event39 boto-fitxa-entrades-grups-museu Para todos los idiomas
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-en"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-es"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-ca"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-fr"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-pt"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-ar"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-ja"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-id"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-jp"});
+arrEvent.push({"39":"boto-fitxa-entrades-grups-museu-in"});
+
+//event40 boto-museu-dins-fitxa Para todos los idiomas
+arrEvent.push({"40":"boto-museu-dins-fitxa-en"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-es"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-ca"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-fr"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-pt"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-ar"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-ja"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-id"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-jp"});
+arrEvent.push({"40":"boto-museu-dins-fitxa-in"});
+
+
+//event41 boto-seient-lliure  Para todos los idiomas
+arrEvent.push({"41":"boto-seient-lliure-en"});
+arrEvent.push({"41":"boto-seient-lliure-es"});
+arrEvent.push({"41":"boto-seient-lliure-ca"});
+arrEvent.push({"41":"boto-seient-lliure-fr"});
+arrEvent.push({"41":"boto-seient-lliure-pt"});
+arrEvent.push({"41":"boto-seient-lliure-ar"});
+arrEvent.push({"41":"boto-seient-lliure-ja"});
+arrEvent.push({"41":"boto-seient-lliure-id"});
+arrEvent.push({"41":"boto-seient-lliure-jp"});
+arrEvent.push({"41":"boto-seient-lliure-in"});
+
+
+arrEvent.push({"42":"boto-noticia"});
+arrEvent.push({"43":"seient-lliure"});
+
+
+//event44 linktemes-prehome Para todos los idiomas
+arrEvent.push({"44":"linktemes-prehome-en"});
+arrEvent.push({"44":"linktemes-prehome-es"});
+arrEvent.push({"44":"linktemes-prehome-ca"});
+arrEvent.push({"44":"linktemes-prehome-fr"});
+arrEvent.push({"44":"linktemes-prehome-pt"});
+arrEvent.push({"44":"linktemes-prehome-ar"});
+arrEvent.push({"44":"linktemes-prehome-ja"});
+arrEvent.push({"44":"linktemes-prehome-id"});
+arrEvent.push({"44":"linktemes-prehome-jp"});
+arrEvent.push({"44":"linktemes-prehome-in"});
+
+arrEvent.push({"45":"fans"});
+arrEvent.push({"45":"barça-fans"});
+arrEvent.push({"46":"camp-nou-experience"});
+
+//event47 icona-modul Para todos los idiomas
+arrEvent.push({"47":"icona-modul-en"}); // 
+arrEvent.push({"47":"icona-modul-es"});
+arrEvent.push({"47":"icona-modul-ca"});
+arrEvent.push({"47":"icona-modul-fr"});
+arrEvent.push({"47":"icona-modul-pt"});
+arrEvent.push({"47":"icona-modul-ar"});
+arrEvent.push({"47":"icona-modul-ja"});
+arrEvent.push({"47":"icona-modul-id"});
+arrEvent.push({"47":"icona-modul-jp"});
+arrEvent.push({"47":"icona-modul-in"});
+
+arrEvent.push({"48":"login"});
+//event49 alliberament  Para eventos con categoria "alliberament" y "alliberar-seient" y "alliberar-entrades"
+
+arrEvent.push({"49":"alliberament"});
+arrEvent.push({"49":"alliberament-seient"});
+arrEvent.push({"49":"alliberament-entrades"});
+
+arrEvent.push({"50":"recuperacio"});
+arrEvent.push({"51":"canvi-estat"});
+arrEvent.push({"52":"inici"});
+arrEvent.push({"53":"registre"});
+arrEvent.push({"54":"atencio-online"});
+arrEvent.push({"55":"marcador-web"});
+arrEvent.push({"56":"microsite-passaport-infantil"});
+
+//event57 modul-lateral-home-museu  Para todos los idiomas
+arrEvent.push({"57":"modul-lateral-home-museu-en"});
+arrEvent.push({"57":"modul-lateral-home-museu-es"});
+arrEvent.push({"57":"modul-lateral-home-museu-ca"});
+arrEvent.push({"57":"modul-lateral-home-museu-fr"});
+arrEvent.push({"57":"modul-lateral-home-museu-pt"});
+arrEvent.push({"57":"modul-lateral-home-museu-ar"});
+arrEvent.push({"57":"modul-lateral-home-museu-ja"});
+arrEvent.push({"57":"modul-lateral-home-museu-id"});
+arrEvent.push({"57":"modul-lateral-home-museu-jp"});
+arrEvent.push({"57":"modul-lateral-home-museu-in"});
+
+arrEvent.push({"58":"vip-events"});
+arrEvent.push({"59":"comprar-botiga"});
+
+//event60 web-fcb Para todos los idiomas. Puede salir también "web-[idioma]"
+arrEvent.push({"60":"web-fcb-en"});
+arrEvent.push({"60":"web-fcb-es"});
+arrEvent.push({"60":"web-fcb-ca"});
+arrEvent.push({"60":"web-fcb-fr"});
+arrEvent.push({"60":"web-fcb-pt"});
+arrEvent.push({"60":"web-fcb-ar"});
+arrEvent.push({"60":"web-fcb-ja"});
+arrEvent.push({"60":"web-fcb-id"});
+arrEvent.push({"60":"web-fcb-jp"});
+arrEvent.push({"60":"web-fcb-in"});
+arrEvent.push({"60":"web-en"});
+arrEvent.push({"60":"web-es"});
+arrEvent.push({"60":"web-ca"});
+arrEvent.push({"60":"web-fr"});
+arrEvent.push({"60":"web-pt"});
+arrEvent.push({"60":"web-ar"});
+arrEvent.push({"60":"web-ja"});
+arrEvent.push({"60":"web-id"});
+arrEvent.push({"60":"web-jp"});
+arrEvent.push({"60":"web-in"});
+
+arrEvent.push({"61":"modalitat-cobrament-seient-lliure"});
+arrEvent.push({"62":"formularis"});
+arrEvent.push({"63":"redes sociales"});
+arrEvent.push({"64":"destacados"});
+arrEvent.push({"65":"menus"});
+arrEvent.push({"65":"menu"});
+arrEvent.push({"66":"banners"});
+arrEvent.push({"67":"fcblegends"});
+arrEvent.push({"67":"fcb-legends"});
+arrEvent.push({"68":"fcbdrive"});
+arrEvent.push({"118":"barca-video"});
+arrEvent.push({"121":"fcbjugadors"});
+arrEvent.push({"154":"Draw"});
+  
+//copiar hasta aqui para el debuging en console.
+
+
+// code_block(indice.toString());
+var catFCB = normalize(_satellite.getVar('catFCB'));
+doTrackingEvent(catFCB);

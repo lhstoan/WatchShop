@@ -1,0 +1,57 @@
+// banner
+.bannerHome {
+    .slider-Home {
+        .swiper-container {
+            .swiper-wrapper {
+                position: relative;
+                .swiper-slide {
+                    figure {
+                        width : 100%;
+                        height: 100%;
+
+                        figcaption {
+                            position  : absolute;
+                            top       : 50%;
+                            left      : 50%;
+                            transform : translate(-50%, -50%);
+                            text-align: center;
+                            color     : white;
+                            width     : 80%;
+
+                            h3 {
+                                display: block;
+                                font-size     : 36px;
+                                letter-spacing: 10px;
+                                font-family   : 'Oswald';
+                                margin-bottom : 1em;
+                            }
+
+                            p {
+                                display: block;
+                                font-size    : 20px;
+                                font-family  : OExtraLight;
+                                color        : #b2b2b2;
+                                margin-bottom: 1.5em;
+                            }
+
+                            .buttom-slider {
+                                a {
+                                    font-family: OBold;
+                                    padding    : 12px 35px;
+                                    line-height: 25px;
+                                    border     : 2px solid #ffffff;
+
+                                    &:hover {
+                                        text-decoration: none;
+                                        color: white;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
